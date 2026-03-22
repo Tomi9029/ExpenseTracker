@@ -16,11 +16,9 @@ public class ExpenseRepository {
         AppDatabase db = AppDatabase.getDatabase(application);
         transactionDao = db.transactionDao();
         categoryDao = db.categoryDao();
-        // A tranzakciókat már nem itt inicializáljuk fixen, mert a userId-tól függenek!
         allCategories = categoryDao.getAllCategories();
     }
 
-    // ÚJ: Ez a metódus hidalja át a DAO és a ViewModel közötti szakadékot
     public LiveData<List<Transaction>> getTransactionsByUser(String userId) {
         return transactionDao.getTransactionsByUser(userId);
     }

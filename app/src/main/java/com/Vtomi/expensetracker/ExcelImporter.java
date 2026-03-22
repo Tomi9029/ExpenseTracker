@@ -34,24 +34,23 @@ public class ExcelImporter {
 
         DataFormatter formatter = new DataFormatter();
 
-        // Az 1. sortól indulunk (mert a 0. a fejléc)
+        //0. elem fejléc szóval 1-től iterálunk
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             Row row = sheet.getRow(i);
             if (row == null) continue;
 
             try {
-                // A oszlop: Dátum
+                //A oszlop: dátum
                 String rawDate = formatter.formatCellValue(row.getCell(0));
 
-                // Ha üres a dátum, valószínűleg egy üres sor a táblázat alján, ugorjuk át
                 if (rawDate == null || rawDate.isEmpty()) {
                     continue;
                 }
 
-                // G oszlop: Kategória név
+                //G oszlop: kategória név
                 String categoryName = formatter.formatCellValue(row.getCell(6));
 
-                // K oszlop: Összeg
+                //K oszlop: összeg
                 org.apache.poi.ss.usermodel.Cell amountCell = row.getCell(10);
                 double amount = 0.0;
 
@@ -64,10 +63,9 @@ public class ExcelImporter {
                     }
                 }
 
-                // --- EZ A RÉSZ HIÁNYZOTT! ---
                 long dateMillis = parseOtpDate(rawDate);
 
-                // Ha nincs kategória, vagy "Nem kategorizált", legyen "Általános"
+                //ha nincs kategória, vagy "Nem kategorizált" az érték, legyen "Általános"
                 if (categoryName.equalsIgnoreCase("Nem kategorizált") || categoryName.isEmpty()) {
                     categoryName = "Általános";
                 }
@@ -75,10 +73,9 @@ public class ExcelImporter {
                 boolean isIncome = amount > 0;
                 double absAmount = Math.abs(amount);
 
-                // Létrehozzuk a tranzakciót, és betesszük a listába!
+                //tranzakció létrehozása
                 Transaction t = new Transaction("OTP Import", absAmount, dateMillis, 0, isIncome, userId);
                 results.add(new ImportModel(t, categoryName));
-                // -----------------------------
 
             } catch (Exception e) {
                 Log.e("ExcelImport", i + ". sor feldolgozása sikertelen: " + e.getMessage());
@@ -87,11 +84,11 @@ public class ExcelImporter {
         }
         workbook.close();
 
-        // Logoljuk ki, hány tételt találtunk, hogy lássuk a Logcatben
         Log.d("ExcelImport", "Sikeresen beolvasva " + results.size() + " darab tétel az Excelből.");
         return results;
     }
 
+    //számok letisztítása
     private static double cleanAmount(String raw) {
         if (raw == null || raw.isEmpty()) return 0;
 

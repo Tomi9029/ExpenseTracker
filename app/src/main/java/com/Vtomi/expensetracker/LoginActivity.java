@@ -24,11 +24,11 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login); // Betölti a gombot tartalmazó XML-t
+        setContentView(R.layout.activity_login);
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        // Google Bejelentkezés beállítása
+        //google bejelentkezés beállítása
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -36,7 +36,6 @@ public class LoginActivity extends AppCompatActivity {
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        // A gomb eseménykezelője (Az ID-nak egyeznie kell az XML-ben lévővel!)
         findViewById(R.id.btn_google_sign_in).setOnClickListener(v -> {
             Intent signInIntent = googleSignInClient.getSignInIntent();
             startActivityForResult(signInIntent, RC_SIGN_IN);
@@ -62,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
         firebaseAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        finish(); // Visszazárjuk a LoginActivity-t, így visszajutunk a Main-re
+                        finish();
                     } else {
                         Toast.makeText(this, "Firebase hiba", Toast.LENGTH_SHORT).show();
                     }

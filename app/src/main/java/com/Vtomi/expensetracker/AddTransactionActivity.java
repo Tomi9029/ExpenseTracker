@@ -47,22 +47,21 @@ public class AddTransactionActivity extends AppCompatActivity {
 
         viewModel = new ViewModelProvider(this).get(ExpenseViewModel.class);
 
-        // Spinner beállítása
         categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCategory.setAdapter(categoryAdapter);
 
-        // Kategóriák betöltése az adatbázisból
+        //kategóriák betöltése
         viewModel.getAllCategories().observe(this, categories -> {
             categoryAdapter.clear();
             categoryAdapter.addAll(categories);
             categoryAdapter.notifyDataSetChanged();
         });
 
-        // Új kategória gomb eseménye
+        //új kategória gomb
         addCategoryButton.setOnClickListener(v -> showAddCategoryDialog());
 
-        // Dátumválasztó (marad a régi)
+        //dátumválasztó
         dateButton.setOnClickListener(v -> {
             android.app.DatePickerDialog datePicker = new android.app.DatePickerDialog(this,
                     (view, year1, month1, dayOfMonth) -> {
@@ -84,14 +83,15 @@ public class AddTransactionActivity extends AppCompatActivity {
                     }
                 }
         );
+        //kamera engedélykérés
         findViewById(R.id.fab_scan_receipt).setOnClickListener(v -> {
             if (androidx.core.content.ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA)
                     == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                // HA VAN ENGEDÉLY: Mehetünk az OCR-re
+                //ha van engedély megnyithatja a kamerát
                 Intent intent = new Intent(this, OcrActivity.class);
                 ocrLauncher.launch(intent);
             } else {
-                // HA NINCS: Kérünk, és NEM indulunk el (majd a következő kattintásra, ha megadta)
+                //ha nem ad engedélyt, visszalép
                 requestPermissions(new String[]{android.Manifest.permission.CAMERA}, 100);
             }
         });
@@ -127,7 +127,6 @@ public class AddTransactionActivity extends AppCompatActivity {
         double amount = Double.parseDouble(amountStr);
         boolean isIncome = switchIncome.isChecked();
 
-        // Fontos: Itt most már a kategória objektum ID-ját kérjük le!
         Category selectedCategory = (Category) spinnerCategory.getSelectedItem();
         int categoryId = (selectedCategory != null) ? selectedCategory.getId() : 0;
 

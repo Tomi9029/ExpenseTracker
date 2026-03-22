@@ -19,20 +19,17 @@ public class MyPieChartMarkerView extends MarkerView {
         tvAmount = findViewById(R.id.marker_amount);
     }
 
-    // Ez a metódus fut le, amikor a felhasználó rákattint egy szeletre
+
     @Override
     public void refreshContent(Entry e, Highlight highlight) {
         if (e instanceof PieEntry) {
             PieEntry pe = (PieEntry) e;
-            // Beállítjuk a kategória nevét
             tvCategory.setText(pe.getLabel());
-            // Beállítjuk a pontos összeget Ft formátumban
             tvAmount.setText(String.format("%.0f Ft", pe.getValue()));
         }
         super.refreshContent(e, highlight);
     }
 
-    // Beállítjuk a buborék pozícióját (középre, a szelet fölé)
     @Override
     public MPPointF getOffset() {
         return new MPPointF(-(getWidth() / 2f), -getHeight());

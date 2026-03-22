@@ -13,13 +13,12 @@ public class Category {
         this.name = name;
     }
 
-    // Getterek és Setterek
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    // Ez azért kell, hogy a Spinnerben a név jelenjen meg
+    //ez azért kell, hogy a spinnerben a név jelenjen meg
     @Override
     public String toString() {
         return name;

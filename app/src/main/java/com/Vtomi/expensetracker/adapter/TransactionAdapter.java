@@ -18,7 +18,7 @@ import java.util.Locale;
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionHolder> {
 
     private List<Transaction> transactions = new ArrayList<>();
-    private List<com.Vtomi.expensetracker.model.Category> categoryList = new ArrayList<>(); // ÚJ
+    private List<com.Vtomi.expensetracker.model.Category> categoryList = new ArrayList<>();
     public interface OnItemLongClickListener {
         void onItemLongClick(Transaction transaction);
     }
@@ -30,7 +30,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         this.longClickListener = listener;
     }
 
-    // EZ A METÓDUS VALÓSZÍNŰLEG HIÁNYZOTT:
     @NonNull
     @Override
     public TransactionHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,7 +42,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     public void onBindViewHolder(@NonNull TransactionHolder holder, int position) {
         Transaction current = transactions.get(position);
 
-        // Kategória név kikeresése az ID alapján
         String categoryName = "Egyéb";
         for (Category cat : categories) {
             if (cat.getId() == current.getCategoryId()) {

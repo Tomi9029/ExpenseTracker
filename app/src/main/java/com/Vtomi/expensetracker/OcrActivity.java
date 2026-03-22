@@ -37,7 +37,7 @@ public class OcrActivity extends AppCompatActivity {
     private View scannerFrame;
     private double lastDetectedAmount = 0;
 
-    // Regex: rugalmasabb keresés, megtalálja a tiszta számokat
+    //regex ai által generálva
     private final Pattern pattern = Pattern.compile("\\d+(?:[.,]\\d+)?");
 
     @Override
@@ -47,7 +47,7 @@ public class OcrActivity extends AppCompatActivity {
 
         viewFinder = findViewById(R.id.viewFinder);
         tvLiveAmount = findViewById(R.id.tv_live_amount);
-        scannerFrame = findViewById(R.id.scanner_frame); // Győződj meg róla, hogy az XML-ben ez az ID!
+        scannerFrame = findViewById(R.id.scanner_frame);
 
         recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
 
@@ -166,7 +166,7 @@ public class OcrActivity extends AppCompatActivity {
 
                         try {
                             double found = Double.parseDouble(text);
-                            // Szűrő: Reális, legalább 3 jegyű összeg (darabszámok kiszűrése)
+                            //nagyjából reális szűrő
                             if (found > 100 && found < 1000000) {
                                 if (found > currentMax) {
                                     currentMax = found;
@@ -183,7 +183,7 @@ public class OcrActivity extends AppCompatActivity {
             double finalAmount = currentMax;
             runOnUiThread(() -> {
                 tvLiveAmount.setText("Keretben talált összeg: " + (int)finalAmount + " Ft");
-                tvLiveAmount.setTextColor(Color.parseColor("#4CAF50")); // Zöldre vált, ha talált valamit
+                tvLiveAmount.setTextColor(Color.parseColor("#4CAF50"));
             });
         } else {
             runOnUiThread(() -> {

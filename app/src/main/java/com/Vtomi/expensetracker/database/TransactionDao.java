@@ -16,7 +16,7 @@ public interface TransactionDao {
     @Delete
     void delete(Transaction transaction);
 
-    // Ez az új metódus, ami a userId alapján szűr
+    //userid alapján szűr
     @Query("SELECT * FROM transaction_table WHERE userId = :currentUserId ORDER BY date DESC")
     LiveData<List<Transaction>> getTransactionsByUser(String currentUserId);
 

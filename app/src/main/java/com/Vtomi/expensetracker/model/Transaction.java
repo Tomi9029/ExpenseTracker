@@ -11,12 +11,11 @@ public class Transaction {
 
     private String note;
     private double amount;
-    private long date;      // Longként tároljuk a dátumot (timestamp)
-    private int categoryId; // Összeköti a kategóriával
-    private boolean isIncome; // True = Bevétel, False = Kiadás
+    private long date;
+    private int categoryId;
+    private boolean isIncome;
     private String userId;
 
-    // Konstruktor
     public Transaction(String note, double amount, long date, int categoryId, boolean isIncome, String userId) {
         this.note = note;
         this.amount = amount;
@@ -29,7 +28,6 @@ public class Transaction {
         this.categoryId = categoryId;
     }
 
-    // Getterek és Setterek (Fontosak a Room-nak!)
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

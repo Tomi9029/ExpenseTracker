@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         setupLoginLogic();
         setupFab();
 
-        // 2. INICIALIZÁLÁS (Metóduson belül!)
         excelPickerLauncher = registerForActivityResult(
                 new ActivityResultContracts.GetContent(),
                 uri -> {
@@ -69,13 +68,12 @@ public class MainActivity extends AppCompatActivity {
             FirebaseUser user = mAuth.getCurrentUser();
             String userId = (user != null) ? user.getUid() : "anonymous";
 
-            // Lefuttatjuk az importálót egy háttérszálon, hogy ne fagyjon le az app
+            //az importot egy háttérszálon futtatjuk
             new Thread(() -> {
                 try {
-                    // Az ExcelImporter most már egy olyan listát ad vissza, amiben benne van a kategória neve is
                     List<ExcelImporter.ImportModel> importedData = ExcelImporter.parseOtpExcel(inputStream, userId);
 
-                    // Visszatérünk a főszálra az adatbázis műveletekhez
+                    //főszál az adatb cuccokhoz
                     runOnUiThread(() -> {
                         processImportedTransactions(importedData);
                         Toast.makeText(this, "Importálás befejezve!", Toast.LENGTH_SHORT).show();
@@ -90,70 +88,18 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-//    private void processImportedTransactions(List<ExcelImporter.ImportModel> data) {
-//        // 1. Gyűjtsük ki az ÖSSZES egyedi kategória nevet az Excelből
-//        java.util.Set<String> excelCategoryNames = new java.util.HashSet<>();
-//        for (ExcelImporter.ImportModel item : data) {
-//            excelCategoryNames.add(item.categoryName.trim());
-//        }
-//
-//        // 2. Szerezzük meg a mostaniakat
-//        List<Category> currentCats = expenseViewModel.getAllCategories().getValue();
-//        if (currentCats == null) currentCats = new ArrayList<>();
-//
-//        // 3. Szúrjuk be azokat, amik hiányoznak
-//        for (String name : excelCategoryNames) {
-//            boolean exists = false;
-//            for (Category c : currentCats) {
-//                if (c.getName().equalsIgnoreCase(name)) {
-//                    exists = true;
-//                    break;
-//                }
-//            }
-//            if (!exists) {
-//                expenseViewModel.insertCategory(new Category(name));
-//            }
-//        }
-//
-//        // 4. TRÜKK: Várjunk egy kicsit, vagy használjunk egy Observer-t!
-//        // Mivel a fenti insertek a háttérben futnak, a tranzakciókat
-//        // érdemes egy kis késleltetéssel indítani, hogy az adatbázis "utolérje" magát.
-//        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-//            // Frissítsük a listát (most már benne kell legyenek az újak ID-val)
-//            List<Category> updatedCats = expenseViewModel.getAllCategories().getValue();
-//            if (updatedCats == null) return;
-//
-//            for (ExcelImporter.ImportModel item : data) {
-//                int foundId = -1;
-//                for (Category c : updatedCats) {
-//                    if (c.getName().equalsIgnoreCase(item.categoryName.trim())) {
-//                        foundId = c.getId();
-//                        break;
-//                    }
-//                }
-//
-//                // Ha még mindig nincs meg (nagyon lassú az adatbázis), akkor fallback
-//                if (foundId == -1) foundId = getFallbackId(updatedCats);
-//
-//                item.transaction.setCategoryId(foundId);
-//                expenseViewModel.insertTransaction(item.transaction);
-//            }
-//            Toast.makeText(this, "Importálás sikeresen befejeződött!", Toast.LENGTH_SHORT).show();
-//        }, 500); // 500ms késleltetés általában elég a Room-nak az insertekhez
-//    }
 
     private void processImportedTransactions(List<ExcelImporter.ImportModel> data) {
-        // 1. Gyűjtsük ki az ÖSSZES egyedi kategória nevet az Excelből
+        //egyedi kategórainevek otp excelből
         java.util.Set<String> excelCategoryNames = new java.util.HashSet<>();
         for (ExcelImporter.ImportModel item : data) {
             excelCategoryNames.add(item.categoryName.trim());
         }
 
-        // 2. Szerezzük meg a mostaniakat
         List<Category> currentCats = expenseViewModel.getAllCategories().getValue();
         if (currentCats == null) currentCats = new ArrayList<>();
 
-        // 3. Szúrjuk be azokat, amik hiányoznak
+        //az új kategórianevek hozzáadása
         for (String name : excelCategoryNames) {
             boolean exists = false;
             for (Category c : currentCats) {
@@ -167,11 +113,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // 4. TRÜKK: Várjunk egy kicsit, vagy használjunk egy Observer-t!
-        // Mivel a fenti insertek a háttérben futnak, a tranzakciókat
-        // érdemes egy kis késleltetéssel indítani, hogy az adatbázis "utolérje" magát.
+        //késleltetéssel indítjuk hogy az adatb-ban ne legyen hiba
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-            // Frissítsük a listát (most már benne kell legyenek az újak ID-val)
+
             List<Category> updatedCats = expenseViewModel.getAllCategories().getValue();
             if (updatedCats == null) return;
 
@@ -184,14 +128,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                // Ha még mindig nincs meg (nagyon lassú az adatbázis), akkor fallback
+                //fallbackid ha nagyon lassú az adatb
                 if (foundId == -1) foundId = getFallbackId(updatedCats);
 
                 item.transaction.setCategoryId(foundId);
                 expenseViewModel.insertTransaction(item.transaction);
             }
             Toast.makeText(this, "Importálás sikeresen befejeződött!", Toast.LENGTH_SHORT).show();
-        }, 500); // 500ms késleltetés általában elég a Room-nak az insertekhez
+        }, 500);
     }
     private int getFallbackId(List<Category> cats) {
         for (Category c : cats) {
@@ -224,16 +168,15 @@ public class MainActivity extends AppCompatActivity {
     private void setupViewModel() {
         expenseViewModel = new ViewModelProvider(this).get(ExpenseViewModel.class);
 
-        // 1. Tranzakciók figyelése (ez már megvan, csak ellenőrizd)
         expenseViewModel.getAllTransactions().observe(this, transactions -> {
             allTransactionsList = transactions;
             filterTransactions();
         });
 
 
-        // 2. ÚJ: Kategóriák figyelése és küldése az adapternek
+        //kategóriák figyelése és küldése az adapternek
         expenseViewModel.getAllCategories().observe(this, categories -> {
-            // 1. Spinner frissítése (ez már megvan)
+
             List<String> categoryNames = new ArrayList<>();
             categoryNames.add("Összes");
             for (Category c : categories) {
@@ -243,17 +186,18 @@ public class MainActivity extends AppCompatActivity {
             spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerFilterCategory.setAdapter(spinnerAdapter);
 
-            // 2. ÚJ: Az ADAPTER-nek is adjuk át a kategóriákat!
+            //adapternek átadjuk a kategóriákat
             RecyclerView rv = findViewById(R.id.recyclerView);
             TransactionAdapter transactionAdapter = (TransactionAdapter) rv.getAdapter();
             if (transactionAdapter != null) {
                 transactionAdapter.setCategories(categories); // Itt dől el, mi jelenik meg a listában
             }
         });
+
         spinnerFilterCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                filterTransactions(); // Frissítünk, ha a felhasználó választ
+                filterTransactions();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
@@ -300,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Kényszerítsük a gombot, hogy nézzen rá újra a Firebase-re
         updateLoginButtonUI();
     }
 
@@ -319,11 +262,9 @@ public class MainActivity extends AppCompatActivity {
     private void updateLoginButtonUI() {
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() != null) {
-            // Ha van bejelentkezett felhasználó
             String name = mAuth.getCurrentUser().getDisplayName();
-            loginButton.setText("Kijelentkezés (" + (name != null ? name : "Felhasználó") + ")");
+            loginButton.setText("Kijelentkezés\n (" + (name != null ? name : "Felhasználó") + ")");
         } else {
-            // Ha nincs senki
             loginButton.setText("Bejelentkezés");
         }
         FirebaseUser user = mAuth.getCurrentUser();
@@ -379,13 +320,13 @@ public class MainActivity extends AppCompatActivity {
         textTotalExpense.setText(String.format("Kiadás: %.0f Ft", expense));
 
         if (total < 0) {
-            // Negatív egyenleg -> Piros
+            //-egyenleg piros
             textTotalBalance.setTextColor(android.graphics.Color.parseColor("#E91E63"));
         } else if (total > 0) {
-            // Pozitív egyenleg -> Zöld
+            //+egyenleg zöld
             textTotalBalance.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
         } else {
-            // Pontosan 0 -> Fekete (vagy a téma szerinti alapértelmezett)
+            //0 fekete
             textTotalBalance.setTextColor(android.graphics.Color.BLACK);
         }
     }

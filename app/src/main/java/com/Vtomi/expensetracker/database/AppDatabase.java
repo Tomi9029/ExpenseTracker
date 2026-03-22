@@ -9,7 +9,6 @@ import com.Vtomi.expensetracker.model.Transaction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// Megadjuk, melyik táblák tartozzanak az adatbázishoz
 @Database(entities = {Transaction.class, Category.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -18,7 +17,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase INSTANCE;
 
-    // Ez a szálkezelő segít, hogy ne a kijelzőt kezelő szálon mentsünk adatot (ne fagyjon le az app)
+    //mellékszálon történik az adatok mentése
     public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(4);
 
     public static AppDatabase getDatabase(final Context context) {

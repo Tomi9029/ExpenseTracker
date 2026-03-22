@@ -37,10 +37,9 @@ public class StatisticsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState); // 1. hívás
-        setContentView(R.layout.activity_statistics); // 2. layout betöltése
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_statistics);
 
-        // 3. Csak ezután jöhetnek a View-k!
         spinnerMonth = findViewById(R.id.spinner_month);
         pieChart = findViewById(R.id.pieChart);
 
@@ -74,11 +73,11 @@ public class StatisticsActivity extends AppCompatActivity {
         });
         pieChart = findViewById(R.id.pieChart);
         MyPieChartMarkerView marker = new MyPieChartMarkerView(this, R.layout.marker_view_pie);
-        pieChart.setMarker(marker); // Megmondjuk a chartnak, hogy használja ezt a markert
-        pieChart.setDrawMarkers(true); // Engedélyezzük a markerek rajzolását
+        pieChart.setMarker(marker);
+        pieChart.setDrawMarkers(true);
     }
 
-    // Ez a metódus csak akkor rajzol, ha már minden adat megérkezett
+    //várunk a rajzolással
     private void tryDrawChart() {
         if (currentTransactions != null && currentCategories != null) {
             updatePieChart(currentTransactions, currentCategories);
@@ -90,7 +89,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
         List<PieEntry> entries = new ArrayList<>();
         Map<Integer, Double> categoryTotals = new HashMap<>();
-        double totalExpenseSum = 0; // ÚJ: Itt tároljuk a végösszeget
+        double totalExpenseSum = 0;
         boolean hasExpenses = false;
 
         for (Transaction t : transactions) {
@@ -107,7 +106,7 @@ public class StatisticsActivity extends AppCompatActivity {
                     double amount = t.getAmount();
                     categoryTotals.put(t.getCategoryId(),
                             categoryTotals.getOrDefault(t.getCategoryId(), 0.0) + amount);
-                    totalExpenseSum += amount; // ÚJ: Hozzáadjuk a havi/összes szumhoz
+                    totalExpenseSum += amount;
                     hasExpenses = true;
                 }
             }
@@ -154,12 +153,12 @@ public class StatisticsActivity extends AppCompatActivity {
         //pieChart.setCenterText("Kiadások");
         pieChart.setCenterTextSize(16f);
         //pieChart.setCenterTextSize(18f);
-        pieChart.setHoleRadius(45f); // A lyuk mérete középen
+        pieChart.setHoleRadius(45f);
         pieChart.setTransparentCircleRadius(50f);
-        pieChart.getLegend().setEnabled(true); // Mutassa a jelmagyarázatot alul
-        pieChart.getLegend().setWordWrapEnabled(true); // Ha sok a név, törje több sorba
+        pieChart.getLegend().setEnabled(true); //jelmagyarázat
+        pieChart.getLegend().setWordWrapEnabled(true);
 
-        pieChart.setEntryLabelColor(Color.BLACK); // A feliratok a szeleteken legyenek feketék (jobban olvasható)
+        pieChart.setEntryLabelColor(Color.BLACK);
         pieChart.invalidate();
     }
 }
