@@ -1,0 +1,9 @@
+Mivel a biztonsági előírások miatt a google-services.json fájl nem része a repository-nak, a projekt futtatásához kövesd az alábbi lépéseket:
+  1. Menj a Firebase Console oldalra.
+  2. Hozz létre egy új projektet.
+  3. Add hozzá az Android alkalmazást a projekthez.
+  4. Package Name: com.Vtomi.expensetracker
+  5. Töltsd le a generált google-services.json fájlt.
+  6. Másold be a projekteden belül az app/ mappába.
+  7. A Firebase konzolon engedélyezd az Authentication menüpontban a Google bejelentkezést.
+  8. Add hozzá a saját géped SHA-1 ujjlenyomatát a Firebase projekt beállításaihoz.
