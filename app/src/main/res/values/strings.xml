@@ -1,0 +1,12 @@
+<resources>
+    <string name="default_web_client_id">IDE_MÁSOLD_BE_A_HOSSZÚ_ID-T_A_JSON-BŐL</string>
+    <string name="app_name">Expense Tracker</string>
+    <string name="login_text">Bejelentkezés</string>
+    <string name="current_balance">Aktuális egyenleg</string>
+    <string name="default_balance">0 Ft</string>
+    <string name="default_income">Bevétel: 0 Ft</string>
+    <string name="default_expense">Kiadás: 0 Ft</string>
+    <string name="otp_import">OTP Import</string>
+    <string name="desc_add">Tranzakció hozzáadása</string>
+    <string name="desc_stats">Statisztika megnyitása</string>
+</resources>
