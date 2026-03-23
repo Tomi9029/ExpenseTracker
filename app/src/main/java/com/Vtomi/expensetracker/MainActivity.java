@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processImportedTransactions(List<ExcelImporter.ImportModel> data) {
-        //egyedi kategórainevek otp excelből
+        //kategórianevek kigyűjtése
         java.util.Set<String> excelCategoryNames = new java.util.HashSet<>();
         for (ExcelImporter.ImportModel item : data) {
             excelCategoryNames.add(item.categoryName.trim());
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         List<Category> currentCats = expenseViewModel.getAllCategories().getValue();
         if (currentCats == null) currentCats = new ArrayList<>();
 
-        //az új kategórianevek hozzáadása
+        //kategória hozzáadása ha még nemm létezik
         for (String name : excelCategoryNames) {
             boolean exists = false;
             for (Category c : currentCats) {
@@ -113,11 +113,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //késleltetéssel indítjuk hogy az adatb-ban ne legyen hiba
+        //késleltetés a kategóriák létrejötte érdekében
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
 
             List<Category> updatedCats = expenseViewModel.getAllCategories().getValue();
             if (updatedCats == null) return;
+
+            //összes tranzakció lekérése dunlikációk szűréséhez           -todo:optimalizálás
+            List<Transaction> existingTransactions = expenseViewModel.getAllTransactions().getValue();
+            if (existingTransactions == null) existingTransactions = new ArrayList<>();
+
+            int importedCount = 0;
+            int skippedCount = 0;
 
             for (ExcelImporter.ImportModel item : data) {
                 int foundId = -1;
@@ -127,14 +134,37 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     }
                 }
-
-                //fallbackid ha nagyon lassú az adatb
                 if (foundId == -1) foundId = getFallbackId(updatedCats);
 
                 item.transaction.setCategoryId(foundId);
-                expenseViewModel.insertTransaction(item.transaction);
+
+                //duplikáció ellenőrzése
+                boolean isDuplicate = false;
+                for (Transaction existing : existingTransactions) {
+                    //ha minden adat egyezik akkor nem mentjük el
+                    if (existing.getDate() == item.transaction.getDate() &&
+                            existing.getAmount() == item.transaction.getAmount() &&
+                            existing.isIncome() == item.transaction.isIncome() &&
+                            existing.getCategoryId() == foundId) {
+
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                //ha nem duplikátum akkor elmentjük
+                if (!isDuplicate) {
+                    expenseViewModel.insertTransaction(item.transaction);
+                    existingTransactions.add(item.transaction);
+                    importedCount++;
+                } else {
+                    skippedCount++;
+                }
             }
-            Toast.makeText(this, "Importálás sikeresen befejeződött!", Toast.LENGTH_SHORT).show();
+
+            String resultMessage = "Importálás kész! " + importedCount + " új tétel, " + skippedCount + " kihagyva (már létezik).";
+            Toast.makeText(this, resultMessage, Toast.LENGTH_LONG).show();
+
         }, 500);
     }
     private int getFallbackId(List<Category> cats) {
@@ -190,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
             RecyclerView rv = findViewById(R.id.recyclerView);
             TransactionAdapter transactionAdapter = (TransactionAdapter) rv.getAdapter();
             if (transactionAdapter != null) {
-                transactionAdapter.setCategories(categories); // Itt dől el, mi jelenik meg a listában
+                transactionAdapter.setCategories(categories);
             }
         });
 

@@ -77,7 +77,6 @@ public class OcrActivity extends AppCompatActivity {
 
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        // Itt kérünk egy magasabb felbontást, hogy a kisebb számok is élesek legyenek
                         .setTargetResolution(new android.util.Size(1280, 720))
                         .build();
 
@@ -98,12 +97,11 @@ public class OcrActivity extends AppCompatActivity {
     @androidx.annotation.OptIn(markerClass = androidx.camera.core.ExperimentalGetImage.class)
     private void processImage(ImageProxy imageProxy) {
         if (imageProxy.getImage() != null) {
-            // Fontos: Az ML Kit-nek tudnia kell a kép elforgatását!
+            //elforgatva is tudja olvasni
             InputImage image = InputImage.fromMediaImage(imageProxy.getImage(), imageProxy.getImageInfo().getRotationDegrees());
 
             recognizer.process(image)
                     .addOnSuccessListener(visionText -> {
-                        // Kiszámoljuk a keret és a kép koordinátáit
                         extractAmountFromFrame(visionText, imageProxy);
                         imageProxy.close();
                     })
@@ -142,11 +140,9 @@ public class OcrActivity extends AppCompatActivity {
         for (Text.TextBlock block : visionText.getTextBlocks()) {
             for (Text.Line line : block.getLines()) {
 
-                // 3. Lekérjük a szöveg dobozát
                 Rect textRect = line.getBoundingBox();
                 if (textRect != null) {
 
-                    // Transzformáljuk a dobozt a képernyő koordinátáira
                     Rect transformedRect = new Rect(
                             (int) (textRect.left * scaleX),
                             (int) (textRect.top * scaleY),
@@ -154,12 +150,9 @@ public class OcrActivity extends AppCompatActivity {
                             (int) (textRect.bottom * scaleY)
                     );
 
-                    // 4. CSAK AKKOR ELEMZZÜK, HA BENNE VAN A KERETBEN!
-                    // (Azintersect() helyett acontains() jobb, mert az egész sornak bele kell férnie)
                     if (Rect.intersects(frameRect, transformedRect)) {
 
                         String text = line.getText().replace(" ", "").replace(",", ".");
-                        // Tisztítás: Csak a számok és a pontok maradjanak
                         text = text.replaceAll("[^0-9.]", "");
 
                         if (text.isEmpty()) continue;

@@ -14,12 +14,10 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract TransactionDao transactionDao();
     public abstract CategoryDao categoryDao();
-
     private static volatile AppDatabase INSTANCE;
 
     //mellékszálon történik az adatok mentése
     public static final ExecutorService databaseWriteExecutor = Executors.newFixedThreadPool(4);
-
     public static AppDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {

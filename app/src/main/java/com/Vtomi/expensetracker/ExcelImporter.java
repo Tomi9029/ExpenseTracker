@@ -34,23 +34,22 @@ public class ExcelImporter {
 
         DataFormatter formatter = new DataFormatter();
 
-        //0. elem fejléc szóval 1-től iterálunk
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             Row row = sheet.getRow(i);
             if (row == null) continue;
 
             try {
-                //A oszlop: dátum
+                //A dátum
                 String rawDate = formatter.formatCellValue(row.getCell(0));
 
                 if (rawDate == null || rawDate.isEmpty()) {
                     continue;
                 }
 
-                //G oszlop: kategória név
+                //G kategória név
                 String categoryName = formatter.formatCellValue(row.getCell(6));
 
-                //K oszlop: összeg
+                //K összeg
                 org.apache.poi.ss.usermodel.Cell amountCell = row.getCell(10);
                 double amount = 0.0;
 

@@ -23,6 +23,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class StatisticsActivity extends AppCompatActivity {
 
@@ -31,9 +33,16 @@ public class StatisticsActivity extends AppCompatActivity {
 
     private List<Transaction> currentTransactions = null;
     private List<Category> currentCategories = null;
+
     private Spinner spinnerMonth;
+    private Spinner spinnerYear; // ÚJ: Év spinner
+
     private String[] months = {"Összes", "Január", "Február", "Március", "Április", "Május", "Június",
             "Július", "Augusztus", "Szeptember", "Október", "November", "December"};
+
+    // ÚJ: Dinamikus év lista
+    private List<String> yearsList = new ArrayList<>();
+    private ArrayAdapter<String> yearAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,22 +50,33 @@ public class StatisticsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_statistics);
 
         spinnerMonth = findViewById(R.id.spinner_month);
+        spinnerYear = findViewById(R.id.spinner_year); // ÚJ
         pieChart = findViewById(R.id.pieChart);
 
+        // Hónap adapter beállítása
         ArrayAdapter<String> monthAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, months);
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMonth.setAdapter(monthAdapter);
 
+        // ÚJ: Év adapter beállítása
+        yearAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, yearsList);
+        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerYear.setAdapter(yearAdapter);
+
         viewModel = new ViewModelProvider(this).get(ExpenseViewModel.class);
 
-        spinnerMonth.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        // Listenerek a spinnerekhez
+        AdapterView.OnItemSelectedListener spinnerListener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 tryDrawChart();
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        };
+
+        spinnerMonth.setOnItemSelectedListener(spinnerListener);
+        spinnerYear.setOnItemSelectedListener(spinnerListener); // ÚJ
 
         String uid = FirebaseAuth.getInstance().getCurrentUser() != null ?
                 FirebaseAuth.getInstance().getCurrentUser().getUid() : "anonymous";
@@ -64,6 +84,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
         viewModel.getAllTransactions().observe(this, transactions -> {
             currentTransactions = transactions;
+            extractYearsFromTransactions(transactions); // ÚJ: Évek kigyűjtése
             tryDrawChart();
         });
 
@@ -71,13 +92,40 @@ public class StatisticsActivity extends AppCompatActivity {
             currentCategories = categories;
             tryDrawChart();
         });
-        pieChart = findViewById(R.id.pieChart);
+
         MyPieChartMarkerView marker = new MyPieChartMarkerView(this, R.layout.marker_view_pie);
         pieChart.setMarker(marker);
         pieChart.setDrawMarkers(true);
     }
 
-    //várunk a rajzolással
+    // ÚJ: Ez a metódus megkeresi az összes létező évet a tranzakcióidból
+    private void extractYearsFromTransactions(List<Transaction> transactions) {
+        String currentSelected = spinnerYear.getSelectedItem() != null ? spinnerYear.getSelectedItem().toString() : "Összes";
+
+        yearsList.clear();
+        yearsList.add("Összes"); // Alapértelmezett opció
+
+        Set<Integer> uniqueYears = new TreeSet<>(); // TreeSet automatikusan sorba rendezi növekvőbe
+        Calendar cal = Calendar.getInstance();
+
+        for (Transaction t : transactions) {
+            cal.setTimeInMillis(t.getDate());
+            uniqueYears.add(cal.get(Calendar.YEAR));
+        }
+
+        for (Integer year : uniqueYears) {
+            yearsList.add(String.valueOf(year));
+        }
+
+        yearAdapter.notifyDataSetChanged();
+
+        // Ha volt már valami kiválasztva, megpróbáljuk visszaállítani
+        int position = yearsList.indexOf(currentSelected);
+        if (position >= 0) {
+            spinnerYear.setSelection(position);
+        }
+    }
+
     private void tryDrawChart() {
         if (currentTransactions != null && currentCategories != null) {
             updatePieChart(currentTransactions, currentCategories);
@@ -86,6 +134,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
     private void updatePieChart(List<Transaction> transactions, List<Category> categories) {
         int selectedMonthIndex = spinnerMonth.getSelectedItemPosition();
+        String selectedYearStr = spinnerYear.getSelectedItem() != null ? spinnerYear.getSelectedItem().toString() : "Összes";
 
         List<PieEntry> entries = new ArrayList<>();
         Map<Integer, Double> categoryTotals = new HashMap<>();
@@ -94,15 +143,16 @@ public class StatisticsActivity extends AppCompatActivity {
 
         for (Transaction t : transactions) {
             if (!t.isIncome()) {
-                boolean matchesMonth = true;
-                if (selectedMonthIndex > 0) {
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(t.getDate());
-                    int monthOfTransaction = cal.get(Calendar.MONTH) + 1;
-                    matchesMonth = (monthOfTransaction == selectedMonthIndex);
-                }
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(t.getDate());
+                int monthOfTransaction = cal.get(Calendar.MONTH) + 1;
+                int yearOfTransaction = cal.get(Calendar.YEAR);
 
-                if (matchesMonth) {
+                // ÚJ: Kombinált szűrés évre és hónapra
+                boolean matchesMonth = (selectedMonthIndex == 0) || (monthOfTransaction == selectedMonthIndex);
+                boolean matchesYear = selectedYearStr.equals("Összes") || String.valueOf(yearOfTransaction).equals(selectedYearStr);
+
+                if (matchesMonth && matchesYear) {
                     double amount = t.getAmount();
                     categoryTotals.put(t.getCategoryId(),
                             categoryTotals.getOrDefault(t.getCategoryId(), 0.0) + amount);
@@ -150,12 +200,10 @@ public class StatisticsActivity extends AppCompatActivity {
         PieData data = new PieData(dataSet);
         pieChart.setData(data);
         pieChart.animateY(1000);
-        //pieChart.setCenterText("Kiadások");
         pieChart.setCenterTextSize(16f);
-        //pieChart.setCenterTextSize(18f);
         pieChart.setHoleRadius(45f);
         pieChart.setTransparentCircleRadius(50f);
-        pieChart.getLegend().setEnabled(true); //jelmagyarázat
+        pieChart.getLegend().setEnabled(true);
         pieChart.getLegend().setWordWrapEnabled(true);
 
         pieChart.setEntryLabelColor(Color.BLACK);
