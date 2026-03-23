@@ -7,3 +7,6 @@ Mivel a biztonsági előírások miatt a google-services.json fájl nem része a
   6. Másold be a projekteden belül az app/ mappába.
   7. A Firebase konzolon engedélyezd az Authentication menüpontban a Google bejelentkezést.
   8. Add hozzá a saját géped SHA-1 ujjlenyomatát a Firebase projekt beállításaihoz.
+
+
+A Releases fülben található az .apk. Ezzel tudod androidon futtatni, az Antivirus-nak baja lesz ezzel, ajánlom a tesztelés idejére kikapcsolni
