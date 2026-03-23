@@ -40,7 +40,6 @@ public class StatisticsActivity extends AppCompatActivity {
     private String[] months = {"Összes", "Január", "Február", "Március", "Április", "Május", "Június",
             "Július", "Augusztus", "Szeptember", "Október", "November", "December"};
 
-    // ÚJ: Dinamikus év lista
     private List<String> yearsList = new ArrayList<>();
     private ArrayAdapter<String> yearAdapter;
 
@@ -53,19 +52,16 @@ public class StatisticsActivity extends AppCompatActivity {
         spinnerYear = findViewById(R.id.spinner_year); // ÚJ
         pieChart = findViewById(R.id.pieChart);
 
-        // Hónap adapter beállítása
         ArrayAdapter<String> monthAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, months);
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMonth.setAdapter(monthAdapter);
 
-        // ÚJ: Év adapter beállítása
         yearAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, yearsList);
         yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerYear.setAdapter(yearAdapter);
 
         viewModel = new ViewModelProvider(this).get(ExpenseViewModel.class);
 
-        // Listenerek a spinnerekhez
         AdapterView.OnItemSelectedListener spinnerListener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -98,7 +94,6 @@ public class StatisticsActivity extends AppCompatActivity {
         pieChart.setDrawMarkers(true);
     }
 
-    // ÚJ: Ez a metódus megkeresi az összes létező évet a tranzakcióidból
     private void extractYearsFromTransactions(List<Transaction> transactions) {
         String currentSelected = spinnerYear.getSelectedItem() != null ? spinnerYear.getSelectedItem().toString() : "Összes";
 
@@ -119,7 +114,6 @@ public class StatisticsActivity extends AppCompatActivity {
 
         yearAdapter.notifyDataSetChanged();
 
-        // Ha volt már valami kiválasztva, megpróbáljuk visszaállítani
         int position = yearsList.indexOf(currentSelected);
         if (position >= 0) {
             spinnerYear.setSelection(position);
@@ -148,7 +142,6 @@ public class StatisticsActivity extends AppCompatActivity {
                 int monthOfTransaction = cal.get(Calendar.MONTH) + 1;
                 int yearOfTransaction = cal.get(Calendar.YEAR);
 
-                // ÚJ: Kombinált szűrés évre és hónapra
                 boolean matchesMonth = (selectedMonthIndex == 0) || (monthOfTransaction == selectedMonthIndex);
                 boolean matchesYear = selectedYearStr.equals("Összes") || String.valueOf(yearOfTransaction).equals(selectedYearStr);
 

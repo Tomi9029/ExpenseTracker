@@ -110,7 +110,6 @@ public class OcrActivity extends AppCompatActivity {
     }
 
     private void extractAmountFromFrame(Text visionText, ImageProxy imageProxy) {
-        // 1. Kiszámoljuk a keret koordinátáit a képernyőn pixelben
         int[] location = new int[2];
         scannerFrame.getLocationOnScreen(location);
         int frameX = location[0];
@@ -119,9 +118,6 @@ public class OcrActivity extends AppCompatActivity {
         int frameHeight = scannerFrame.getHeight();
         Rect frameRect = new Rect(frameX, frameY, frameX + frameWidth, frameY + frameHeight);
 
-        // 2. Kiszámoljuk a transzformációs arányt a kamera képe és a képernyő között
-        // (A CameraX PreviewView segítségével)
-        // Fontos: Ha a kép el van forgatva (pl. portré), a szélességet és magasságot fel kell cserélni.
         int rotation = imageProxy.getImageInfo().getRotationDegrees();
         int imageWidth, imageHeight;
         if (rotation == 90 || rotation == 270) {
